@@ -3,7 +3,7 @@
 ## Preparar ambiente 
 
 ```bash
-python3.12 -m venv .venv
+-m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements-dev.txt
 python -m pytest -q
