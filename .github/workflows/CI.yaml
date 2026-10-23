@@ -1,31 +1,27 @@
-name: CI - primer pipeline
+name: CI - pruebas en PR
 
 on:
   push:
+    branches: [main]
+  pull_request:
     branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   pruebas:
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     steps:
-      - name: Descargar codigo
-        uses: actions/checkout@v7
-
-      - name: Instalar Python 3.12.6
-        uses: actions/setup-python@v7
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12.6'
-
-      - name: Comprobar version
-        run: python --version
-
-      - name: Instalar herramientas
-        run: python -m pip install -r requirements.txt
-
-      - name: Ejecutar pruebas
-        run: python -m pytest -q
+      - run: python -m pip install -r requirements.txt
+      - run: python -m pytest -q
