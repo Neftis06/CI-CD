@@ -1,4 +1,3 @@
-import os
 def sumar(a: float, b: float) -> float:
     """Devuelve la suma de dos números."""
     return a + b
