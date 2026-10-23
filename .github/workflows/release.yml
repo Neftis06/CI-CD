@@ -1,0 +1,51 @@
+name: CD - Publicar version privada
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  publicar:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    permissions:
+      contents: write
+    steps:
+      - name: Obtener repositorio
+        uses: actions/checkout@v7
+
+      - name: Preparar Python 3.12.6
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12.6'
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Instalar dependencias
+        run: python -m pip install -r requirements.txt
+
+      - name: Validar codigo antes de publicar
+        run: |
+          ruff check .
+          python -m pytest -q
+
+      - name: Empaquetar aplicacion sin servicios externos
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          mkdir -p dist
+          python -m zipfile -c "dist/calculadora-${TAG}.zip" calculadora.py README.md
+          ls -lh dist/
+
+      - name: Crear GitHub Release dentro del repositorio privado
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$TAG" "dist/calculadora-${TAG}.zip" \
+            --title "Entrega $TAG" \
+            --generate-notes
